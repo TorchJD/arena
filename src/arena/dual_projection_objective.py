@@ -19,10 +19,6 @@ class DualProjectionPrimalFeasibilityObjective(Objective):
         G = _generate_gramian(self.m, self.device, self.dtype)
         _ = project_weights(u, G)
 
-        # Synchronize before timing if using CUDA
-        if self.device.startswith("cuda"):
-            torch.cuda.synchronize()
-
         cumulative_primal_gap_differences = 0.0
         for _ in range(self.iterations):
             u = torch.rand(self.m, device=self.device, dtype=self.dtype)
@@ -49,10 +45,6 @@ class DualProjectionDualFeasibilityObjective(Objective):
         u = torch.rand(self.m, device=self.device, dtype=self.dtype)
         G = _generate_gramian(self.m, self.device, self.dtype)
         _ = project_weights(u, G)
-
-        # Synchronize before timing if using CUDA
-        if self.device.startswith("cuda"):
-            torch.cuda.synchronize()
 
         cumulative_dual_gap_differences = 0.0
         for _ in range(self.iterations):
@@ -81,10 +73,6 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
         G = _generate_gramian(self.m, self.device, self.dtype)
         _ = project_weights(u, G)
 
-        # Synchronize before timing if using CUDA
-        if self.device.startswith("cuda"):
-            torch.cuda.synchronize()
-
         cumulative_slackness = 0.0
         for _ in range(self.iterations):
             u = torch.rand(self.m, device=self.device, dtype=self.dtype)
@@ -98,7 +86,7 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
         average_primal_gap = cumulative_slackness / self.iterations
         return average_primal_gap
 
+
 def _generate_gramian(m: int, device: str, dtype: torch.dtype) -> Tensor:
     matrix = torch.randn([m, m], device=device, dtype=dtype)
     return matrix @ matrix.T
-
