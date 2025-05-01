@@ -1,6 +1,6 @@
 import torch
 
-from aggregator_arena.runtime import Runtime
+from arena.runtime import Runtime
 
 OBJECTIVE_LISTS = {
     "runtime_0": [

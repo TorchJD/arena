@@ -12,17 +12,19 @@ Arguments:
 This script is a placeholder for demonstrating the use of docopt with two string arguments.
 """
 
+import warnings
+warnings.filterwarnings("ignore", category=SyntaxWarning, module="docopt")
+
 from docopt import docopt
 import pandas as pd
 from pprint import pprint
 
-from aggregator_arena.configurations import OBJECTIVE_LISTS
+from arena.configurations import OBJECTIVE_LISTS
 from torchjd.aggregation import *  # noqa
-import warnings
 
-from aggregator_arena.paths import PATH_RESULTS
+from arena.paths import PATH_RESULTS
 
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="docopt")
+
 
 
 def main():
