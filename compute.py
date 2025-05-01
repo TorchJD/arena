@@ -1,6 +1,5 @@
 import click
 import pandas as pd
-from pprint import pprint
 
 from arena.configurations import OBJECTIVE_LISTS
 from arena.interface import INTERFACES
@@ -24,8 +23,6 @@ def main(ref: str, representation: str, interface_key: str, objectives_key: str)
 
     PATH_RESULTS.mkdir(parents=True, exist_ok=True)
     df.to_csv(PATH_RESULTS / f"{column_name}_{objectives_key}.csv", index=False)
-
-    pprint(results, sort_dicts=False)
 
 
 if __name__ == '__main__':
