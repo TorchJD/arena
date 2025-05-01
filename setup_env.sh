@@ -33,7 +33,6 @@ fi
 REF="$1"
 
 rm -rf .venv
-uv venv
-uv pip install uv
-uv pip install "git+ssh://git@github.com/TorchJD/torchjd.git@$REF"
-uv pip install -e .
+uv venv --quiet
+uv pip install --quiet "git+ssh://git@github.com/TorchJD/torchjd.git@$REF"
+uv pip install --quiet -e .
