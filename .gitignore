@@ -1,3 +1,6 @@
+# Data
+results/
+
 # uv
 .python-version
 uv.lock
