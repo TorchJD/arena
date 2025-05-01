@@ -5,7 +5,7 @@ description = "This repo is used to compare different aggregators, potentially f
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "docopt",
+    "click",
     "torch>=2.0.0",
     "pandas"
 ]

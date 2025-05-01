@@ -1,21 +1,4 @@
-"""
-Example Script
-
-Usage:
-  script.py <ref> <aggregator> <objectives-key>
-
-Arguments:
-  <ref>                            TODO
-  <aggregator>                     TODO
-  <objectives-key>                 TODO
-
-This script is a placeholder for demonstrating the use of docopt with two string arguments.
-"""
-
-import warnings
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="docopt")
-
-from docopt import docopt
+import click
 import pandas as pd
 from pprint import pprint
 
@@ -25,12 +8,11 @@ from torchjd.aggregation import *  # noqa
 from arena.paths import PATH_RESULTS
 
 
-def main():
-    args = docopt(__doc__)
-    ref = args["<ref>"]
-    aggregator_str = args["<aggregator>"]
-    objectives_key = args["<objectives-key>"]
-
+@click.command()
+@click.argument('ref')
+@click.argument('aggregator_str')
+@click.argument('objectives_key')
+def main(ref: str, aggregator_str: str, objectives_key: str):
     A = eval(aggregator_str)
     column_name = f"{aggregator_str}_{ref}"
 
