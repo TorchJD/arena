@@ -10,3 +10,11 @@ uv python install 3.12.10
 uv python pin 3.12.10
 ```
 
+## Usage
+
+Run the following command:
+```bash
+./compare_upgrad_speed.sh
+```
+
+You can create similar bash files to make other tests.
