@@ -4,7 +4,7 @@ from typing import Callable
 from torchjd.aggregation import Aggregator
 import importlib
 from functools import partial
-import ast
+import torch  # noqa
 
 
 class Interface(ABC):
@@ -23,19 +23,11 @@ class CurryingInterface(Interface):
             # Output: partial(torchjd.aggregation._dual_cone_utils.project_weights, solver="quadprog")
         """
 
-        module_name = ".".join(representation[:representation.find("(")].split(".")[:-1])
-        function_name = representation[:representation.find("(")].split(".")[-1]
-        params_string = representation[representation.find("(")+1:-1]
-        kwargs = ast.literal_eval(params_string)
-        # kwargs = {}
-        # for param_string in params_string.split(","):
-        #     param_string = param_string.strip()
-        #     key, value_str = param_string.split("=")
-        #     key = key.strip()
-        #     value_str = value_str.strip()
-        #     kwargs[key] = eval(value_str)
+        module_name = ".".join(representation[:representation.find("{")].split(".")[:-1])
+        function_name = representation[:representation.find("{")].split(".")[-1]
+        params_string = representation[representation.find("{"):]
 
-        print(kwargs)
+        kwargs = eval(params_string)
 
         _import_from_module(module_name, function_name)
         fn = globals()[function_name]
@@ -65,47 +57,7 @@ def _import_from_module(module_name: str, object_name: str):
     globals()[object_name] = cls
 
 
-def parse_string_to_dict(input_string):
-    """
-    Converts a string like '"a"=5.0, "b"="test"' into a Python dictionary.
-
-    Args:
-        input_string: The string to parse.
-
-    Returns:
-        A dictionary
-    """
-    result_dict = {}
-    # Split the string by commas to get key-value pairs
-    pairs = input_string.split(',')
-
-    for pair in pairs:
-        # Split each pair by the equals sign
-        if '=' in pair:
-            key_str, value_str = pair.split('=', 1)
-
-            # Clean up the key (remove quotes and leading/trailing spaces)
-            key = key_str.strip().strip('"')
-
-            # Clean up the value and attempt to convert its type
-            value = value_str.strip()
-
-            # Try to evaluate the value to handle numbers and strings correctly
-            try:
-                # Safely evaluate the string to a Python literal
-                value = ast.literal_eval(value)
-            except (ValueError, SyntaxError):
-                # If evaluation fails, keep it as a string after cleaning quotes
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1]
-                elif value.startswith("'") and value.endswith("'"):
-                    value = value[1:-1]
-
-            result_dict[key] = value
-
-    return result_dict
-
-
-fn = CurryingInterface()('torchjd.aggregation._dual_cone_utils.project_weights(solver="quadprog", U=torch.tensor([1., 2.]))')
-# CurryingInterface()('torchjd.aggregation._dual_cone_utils.project_weights(solver="quadprog", mabite=3)')
-# CurryingInterface()('torchjd.aggregation._dual_cone_utils.project_weights(solver="quadprog", test=None)')
+INTERFACES = {
+    "agg": AggregatorInterface(),
+    "curry": CurryingInterface(),
+}
