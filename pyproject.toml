@@ -1,0 +1,11 @@
+[project]
+name = "aggregator-arena"
+version = "0.1.0"
+description = "This repo is used to compare different aggregators, potentially from different commits of torchjd, on a variety of topics (computation time, precision, etc.)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "docopt",
+    "torch>=2.0.0",
+    "pandas"
+]
