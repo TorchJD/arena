@@ -3,10 +3,10 @@ import time
 import torch
 from torchjd.aggregation import Aggregator
 
-from .objective import Objective
+from .aggregator_objective import AggregatorObjective
 
 
-class Runtime(Objective):
+class AggregationTime(AggregatorObjective):
     def __init__(self, m: int, n: int, device: str, dtype: torch.dtype, iterations: int):
         self.m = m
         self.n = n

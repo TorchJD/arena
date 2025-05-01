@@ -25,8 +25,6 @@ from torchjd.aggregation import *  # noqa
 from arena.paths import PATH_RESULTS
 
 
-
-
 def main():
     args = docopt(__doc__)
     ref = args["<ref>"]
