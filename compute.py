@@ -1,5 +1,6 @@
 import click
 import pandas as pd
+from tqdm import tqdm
 
 from arena.configurations import OBJECTIVE_LISTS
 from arena.interface import INTERFACES
@@ -18,7 +19,10 @@ def main(ref: str, representation: str, interface_key: str, objectives_key: str)
 
     objectives = OBJECTIVE_LISTS[objectives_key]
 
-    results = {f"{objective}": objective(fn) for objective in objectives}
+    results = {}
+    for objective in tqdm(objectives):
+        results[f"{objective}"] = objective(fn)
+
     df = pd.DataFrame(list(results.items()), columns=["Objective", column_name])
 
     PATH_RESULTS.mkdir(parents=True, exist_ok=True)
