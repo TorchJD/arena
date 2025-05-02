@@ -36,7 +36,7 @@ class AggregationTime(AggregatorObjective):
         self.iterations = iterations
 
     def __call__(self, A: Aggregator) -> float:
-        J = torch.ones(self.m, self.n, device=self.device, dtype=self.dtype)
+        J = torch.randn(self.m, self.n, device=self.device, dtype=self.dtype)
         A(J)
 
         # Synchronize before timing if using CUDA
