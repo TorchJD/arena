@@ -1,0 +1,142 @@
+import time
+from abc import ABC, abstractmethod
+from typing import Callable
+
+import torch
+from torch import Tensor
+from torchjd.aggregation import Aggregator
+
+from arena.inputs import generate_gramian
+
+
+class Objective(ABC):
+    @abstractmethod
+    def __call__(self, func: Callable) -> float:
+        """Returns the value of the objective obtained for the provided function."""
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
+
+class AggregatorObjective(Objective, ABC):
+    @abstractmethod
+    def __call__(self, A: Aggregator) -> float:
+        """Returns the value of the objective obtained for the provided aggregator."""
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
+
+class AggregationTime(AggregatorObjective):
+    def __init__(self, m: int, n: int, device: str, dtype: torch.dtype, iterations: int):
+        self.m = m
+        self.n = n
+        self.device = device
+        self.dtype = dtype
+        self.iterations = iterations
+
+    def __call__(self, A: Aggregator) -> float:
+        J = torch.ones(self.m, self.n, device=self.device, dtype=self.dtype)
+        A(J)
+
+        # Synchronize before timing if using CUDA
+        if self.device.startswith("cuda"):
+            torch.cuda.synchronize()
+
+        start = time.perf_counter()
+        for _ in range(self.iterations):
+            A(J)
+        if self.device.startswith("cuda"):
+            torch.cuda.synchronize()
+        end = time.perf_counter()
+
+        average_runtime = (end - start) / self.iterations
+        return average_runtime
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(m={self.m}, n={self.n}, device={self.device}, dtype="
+            f"{self.dtype}, iterations={self.iterations})"
+        )
+
+
+class DualProjectionPrimalFeasibilityObjective(Objective):
+    def __init__(self, m: int, device: str, dtype: torch.dtype, iterations: int):
+        self.m = m
+        self.device = device
+        self.dtype = dtype
+        self.iterations = iterations
+
+    def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
+        """Returns the primal feasibility gap."""
+
+        u = torch.rand(self.m, device=self.device, dtype=self.dtype)
+        G = generate_gramian(self.m, self.device, self.dtype)
+        _ = project_weights(u, G)
+
+        cumulative_primal_gap_differences = 0.0
+        for _ in range(self.iterations):
+            u = torch.rand(self.m, device=self.device, dtype=self.dtype)
+            G = generate_gramian(self.m, self.device, self.dtype)
+            w = project_weights(u, G)
+            primal_gap = G @ w
+            primal_gap_positive_part = primal_gap[primal_gap >= 0]
+            difference = torch.abs(primal_gap_positive_part.norm() - primal_gap.norm())
+            cumulative_primal_gap_differences += difference.item()
+
+        average_primal_gap = cumulative_primal_gap_differences / self.iterations
+        return average_primal_gap
+
+
+class DualProjectionDualFeasibilityObjective(Objective):
+    def __init__(self, m: int, device: str, dtype: torch.dtype, iterations: int):
+        self.m = m
+        self.device = device
+        self.dtype = dtype
+        self.iterations = iterations
+
+    def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
+        """Returns the primal feasibility gap."""
+        u = torch.rand(self.m, device=self.device, dtype=self.dtype)
+        G = generate_gramian(self.m, self.device, self.dtype)
+        _ = project_weights(u, G)
+
+        cumulative_dual_gap_differences = 0.0
+        for _ in range(self.iterations):
+            u = torch.rand(self.m, device=self.device, dtype=self.dtype)
+            G = generate_gramian(self.m, self.device, self.dtype)
+            w = project_weights(u, G)
+            dual_gap = w - u
+            dual_gap_positive_part = dual_gap[dual_gap >= 0.0]
+            difference = torch.abs(dual_gap_positive_part.norm() - dual_gap.norm())
+            cumulative_dual_gap_differences += difference.item()
+
+        average_primal_gap = cumulative_dual_gap_differences / self.iterations
+        return average_primal_gap
+
+
+class DualProjectionSlacknessFeasibilityObjective(Objective):
+    def __init__(self, m: int, device: str, dtype: torch.dtype, iterations: int):
+        self.m = m
+        self.device = device
+        self.dtype = dtype
+        self.iterations = iterations
+
+    def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
+        """Returns the primal feasibility gap."""
+        u = torch.rand(self.m, device=self.device, dtype=self.dtype)
+        G = generate_gramian(self.m, self.device, self.dtype)
+        _ = project_weights(u, G)
+
+        cumulative_slackness = 0.0
+        for _ in range(self.iterations):
+            u = torch.rand(self.m, device=self.device, dtype=self.dtype)
+            G = generate_gramian(self.m, self.device, self.dtype)
+            w = project_weights(u, G)
+            dual_gap = w - u
+            primal_gap = G @ w
+            slackness = dual_gap @ primal_gap
+            cumulative_slackness += slackness.abs().item()
+
+        average_primal_gap = cumulative_slackness / self.iterations
+        return average_primal_gap

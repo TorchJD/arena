@@ -1,8 +1,11 @@
 import torch
 
-from arena.aggregation_time import AggregationTime
-from arena.dual_projection_objective import DualProjectionPrimalFeasibilityObjective, \
-    DualProjectionDualFeasibilityObjective, DualProjectionSlacknessFeasibilityObjective
+from arena.objectives import (
+    AggregationTime,
+    DualProjectionDualFeasibilityObjective,
+    DualProjectionSlacknessFeasibilityObjective,
+    DualProjectionPrimalFeasibilityObjective,
+)
 
 OBJECTIVE_LISTS = {
     "runtime": [
