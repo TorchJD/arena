@@ -15,7 +15,7 @@ from arena.paths import PATH_RESULTS
 def main(ref: str, representation: str, interface_key: str, objectives_key: str):
     interface = INTERFACES[interface_key]
     fn = interface(representation)
-    column_name = f"{representation}_{ref}"
+    column_name = f"{representation}@{ref}"
 
     objectives = OBJECTIVE_LISTS[objectives_key]
 
@@ -25,8 +25,9 @@ def main(ref: str, representation: str, interface_key: str, objectives_key: str)
 
     df = pd.DataFrame(list(results.items()), columns=["Objective", column_name])
 
-    PATH_RESULTS.mkdir(parents=True, exist_ok=True)
-    df.to_csv(PATH_RESULTS / f"{column_name}_{objectives_key}.csv", index=False)
+    save_dir = PATH_RESULTS / objectives_key
+    save_dir.mkdir(parents=True, exist_ok=True)
+    df.to_csv(save_dir / f"{column_name}.csv", index=False)
 
 
 if __name__ == '__main__':
