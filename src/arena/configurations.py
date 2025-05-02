@@ -9,7 +9,7 @@ from arena.objectives import (
 
 OBJECTIVE_LISTS = {
     "runtime": [
-        AggregationTime(m=m, n=m, device=device, dtype=dtype, iterations=100)
+        AggregationTime(m=m, n=m, device=device, dtype=dtype, iterations=10)
         for dtype in [torch.float32]
         for device in ["cpu", "cuda"]
         for m in [2, 4, 32, 128]
