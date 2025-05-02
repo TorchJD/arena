@@ -15,7 +15,7 @@ from arena.paths import PATH_RESULTS
 def main(ref: str, representation: str, interface_key: str, objectives_key: str):
     interface = INTERFACES[interface_key]
     fn = interface(representation)
-    column_name = f"{representation}@{ref}"
+    column_name = f"{ref} -> {representation}"
 
     objectives = OBJECTIVE_LISTS[objectives_key]
 
