@@ -16,7 +16,8 @@ def main(objectives_key: str):
     load_dir = PATH_RESULTS / objectives_key
 
     dfs = []
-    for path in load_dir.iterdir():
+    paths = sorted(list(load_dir.iterdir()))
+    for path in paths:
         df = pd.read_csv(path, index_col=0)
         dfs.append(df)
 
