@@ -8,5 +8,6 @@ dependencies = [
     "click",
     "torch>=2.0.0",
     "pandas",
+    "tabulate",  # required for df.to_markdown()
     "tqdm",
 ]
