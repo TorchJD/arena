@@ -82,7 +82,11 @@ class DualProjectionPrimalFeasibilityObjective(Objective):
             w = project_weights(u, G)
             primal_gap = G @ w
             primal_gap_positive_part = primal_gap[primal_gap >= 0]
-            difference = torch.abs(primal_gap_positive_part.norm() - primal_gap.norm())
+            primal_gap_norm = primal_gap.norm()
+            if primal_gap_norm <= 1e-08:
+                difference = 0.0
+            else:
+                difference = torch.abs(primal_gap_positive_part.norm() - primal_gap_norm) / primal_gap_norm
             cumulative_primal_gap_differences += difference.item()
 
         average_primal_gap = cumulative_primal_gap_differences / self.iterations
@@ -109,7 +113,11 @@ class DualProjectionDualFeasibilityObjective(Objective):
             w = project_weights(u, G)
             dual_gap = w - u
             dual_gap_positive_part = dual_gap[dual_gap >= 0.0]
-            difference = torch.abs(dual_gap_positive_part.norm() - dual_gap.norm())
+            dual_gap_norm = dual_gap.norm()
+            if dual_gap_norm <= 1e-08:
+                difference = 0.0
+            else:
+                difference = torch.abs(dual_gap_positive_part.norm() - dual_gap_norm) / dual_gap_norm
             cumulative_dual_gap_differences += difference.item()
 
         average_primal_gap = cumulative_dual_gap_differences / self.iterations
@@ -136,6 +144,11 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
             w = project_weights(u, G)
             dual_gap = w - u
             primal_gap = G @ w
+            norm_product = dual_gap.norm() * primal_gap.norm()
+            if norm_product <= 1e-08:
+                slackness = 0.0
+            else:
+                slackness = dual_gap @ primal_gap / norm_product
             slackness = dual_gap @ primal_gap
             cumulative_slackness += slackness.abs().item()
 
