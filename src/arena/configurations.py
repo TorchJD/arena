@@ -9,7 +9,7 @@ OBJECTIVE_LISTS = {
         AggregationTime(m=m, n=m, device=device, dtype=dtype, iterations=100)
         for dtype in [torch.float32]
         for device in ["cpu", "cuda"]
-        for m in [2, 5, 100]
+        for m in [2, 4, 32, 128]
     ],
     "project_weights": [
         DualProjectionPrimalFeasibilityObjective(m=10, device="cuda", dtype=torch.float32, iterations=10),
