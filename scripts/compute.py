@@ -1,5 +1,8 @@
+import os
+
 import click
 import pandas as pd
+import torch
 from tqdm import tqdm
 
 from arena.configurations import OBJECTIVE_LISTS
@@ -13,6 +16,12 @@ from arena.paths import PATH_RESULTS
 @click.argument("interface_key")
 @click.argument("objectives_key")
 def main(ref: str, representation: str, interface_key: str, objectives_key: str):
+    # Fix randomness
+    torch.manual_seed(0)
+    torch.backends.cudnn.benchmark = False
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    torch.use_deterministic_algorithms(True)
+
     interface = INTERFACES[interface_key]
     fn = interface(representation)
     column_name = f"{ref} -> {representation}"
