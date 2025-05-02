@@ -6,7 +6,7 @@ import torch
 from tqdm import tqdm
 
 from arena.configurations import OBJECTIVE_LISTS
-from arena.interface import INTERFACES
+from arena.interfaces import INTERFACES
 from arena.paths import PATH_RESULTS
 
 
