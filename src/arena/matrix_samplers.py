@@ -1,25 +1,65 @@
+from abc import abstractmethod, ABC
+
 import torch
 from torch import Tensor
 from torch.nn.functional import normalize
 
 
 def generate_gramian(m: int, device: str, dtype: torch.dtype) -> Tensor:
-    matrix = _sample_strictly_weak_matrix(m, m, m-2).to(device=device, dtype=dtype)
+    matrix = _sample_strictly_weak_matrix(m, m, m-2, dtype=dtype).to(device=device)
     # matrix = torch.randn([m, m], device=device, dtype=dtype)
     return matrix @ matrix.T
 
 
-def _sample_matrix(m: int, n: int, rank: int) -> Tensor:
+class MatrixSampler(ABC):
+    def __init__(self, m: int, n: int, rank: int, dtype: torch.dtype):
+        self.m = m
+        self.n = n
+        self.rank = rank
+        self.dtype = dtype
+
+    @abstractmethod
+    def __call__(self) -> Tensor:
+        """Samples a random matrix."""
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(m={self.m}, n={self.n}, rank={self.rank})"
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__.replace("MatrixSampler", "")}({self.m}x{self.n}r{self.rank}:{str(self.dtype)[6:]})"
+
+
+class NormalMatrixSampler(MatrixSampler):
+    def __call__(self) -> Tensor:
+        return _sample_matrix(self.m, self.n, self.rank, self.dtype)
+
+
+class StrongMatrixSampler(MatrixSampler):
+    def __call__(self) -> Tensor:
+        return _sample_strong_matrix(self.m, self.n, self.rank, self.dtype)
+
+
+class StrictlyWeakMatrixSampler(MatrixSampler):
+    def __call__(self) -> Tensor:
+        return _sample_strictly_weak_matrix(self.m, self.n, self.rank, self.dtype)
+
+
+class NonWeakMatrixSampler(MatrixSampler):
+    def __call__(self) -> Tensor:
+        return _sample_non_weak_matrix(self.m, self.n, self.rank, self.dtype)
+
+
+def _sample_matrix(m: int, n: int, rank: int, dtype: torch.dtype) -> Tensor:
     """Samples a random matrix A of shape [m, n] with provided rank."""
 
-    U = _sample_orthonormal_matrix(m)
-    Vt = _sample_orthonormal_matrix(n)
-    S = torch.diag(torch.abs(torch.randn([rank])))
+    U = _sample_orthonormal_matrix(m, dtype=dtype)
+    Vt = _sample_orthonormal_matrix(n, dtype=dtype)
+    S = torch.diag(torch.abs(torch.randn([rank], dtype=dtype)))
     A = U[:, :rank] @ S @ Vt[:rank, :]
     return A
 
 
-def _sample_strong_matrix(m: int, n: int, rank: int) -> Tensor:
+def _sample_strong_matrix(m: int, n: int, rank: int, dtype: torch.dtype) -> Tensor:
     """
     Samples a random strongly stationary matrix A of shape [m, n] with provided rank.
 
@@ -32,16 +72,16 @@ def _sample_strong_matrix(m: int, n: int, rank: int) -> Tensor:
     assert 1 < m
     assert 0 < rank <= min(m - 1, n)
 
-    v = torch.abs(torch.randn([m]))
+    v = torch.abs(torch.randn([m], dtype=dtype))
     U1 = normalize(v, dim=0).unsqueeze(1)
     U2 = _sample_semi_orthonormal_complement(U1)
-    Vt = _sample_orthonormal_matrix(n)
-    S = torch.diag(torch.abs(torch.randn([rank])))
+    Vt = _sample_orthonormal_matrix(n, dtype=dtype)
+    S = torch.diag(torch.abs(torch.randn([rank], dtype=dtype)))
     A = U2[:, :rank] @ S @ Vt[:rank, :]
     return A
 
 
-def _sample_strictly_weak_matrix(m: int, n: int, rank: int) -> Tensor:
+def _sample_strictly_weak_matrix(m: int, n: int, rank: int, dtype: torch.dtype) -> Tensor:
     """
     Samples a random strictly weakly stationary matrix A of shape [m, n] with provided rank.
 
@@ -63,23 +103,23 @@ def _sample_strictly_weak_matrix(m: int, n: int, rank: int) -> Tensor:
     assert 1 < m
     assert 0 < rank <= min(m - 1, n)
 
-    u = torch.abs(torch.randn([m]))
+    u = torch.abs(torch.randn([m], dtype=dtype))
     split_index = torch.randint(1, m, []).item()
-    shuffled_range = torch.randperm(m)
-    v = torch.zeros(m)
+    shuffled_range = torch.randperm(m, dtype=dtype)
+    v = torch.zeros(m, dtype=dtype)
     v[shuffled_range[:split_index]] = normalize(u[shuffled_range[:split_index]], dim=0)
-    v_prime = torch.zeros(m)
+    v_prime = torch.zeros(m, dtype=dtype)
     v_prime[shuffled_range[split_index:]] = normalize(u[shuffled_range[split_index:]], dim=0)
     U1 = torch.stack([v, v_prime]).T
     U2 = _sample_semi_orthonormal_complement(U1)
     U = torch.hstack([U1, U2])
-    Vt = _sample_orthonormal_matrix(n)
-    S = torch.diag(torch.abs(torch.randn([rank])))
+    Vt = _sample_orthonormal_matrix(n, dtype=dtype)
+    S = torch.diag(torch.abs(torch.randn([rank], dtype=dtype)))
     A = U[:, 1 : rank + 1] @ S @ Vt[:rank, :]
     return A
 
 
-def _sample_non_weak_matrix(m: int, n: int, rank: int) -> Tensor:
+def _sample_non_weak_matrix(m: int, n: int, rank: int, dtype: torch.dtype) -> Tensor:
     """
     Samples a random non weakly-stationary matrix A of shape [m, n] with provided rank.
 
@@ -91,20 +131,20 @@ def _sample_non_weak_matrix(m: int, n: int, rank: int) -> Tensor:
 
     assert 0 < rank <= min(m, n)
 
-    u = torch.abs(torch.randn([m]))
+    u = torch.abs(torch.randn([m], dtype=dtype))
     U1 = normalize(u, dim=0).unsqueeze(1)
     U2 = _sample_semi_orthonormal_complement(U1)
     U = torch.hstack([U1, U2])
-    Vt = _sample_orthonormal_matrix(n)
-    S = torch.diag(torch.abs(torch.randn([rank])))
+    Vt = _sample_orthonormal_matrix(n, dtype=dtype)
+    S = torch.diag(torch.abs(torch.randn([rank], dtype=dtype)))
     A = U[:, :rank] @ S @ Vt[:rank, :]
     return A
 
 
-def _sample_orthonormal_matrix(dim: int) -> Tensor:
+def _sample_orthonormal_matrix(dim: int, dtype: torch.dtype) -> Tensor:
     """Uniformly samples a random orthonormal matrix of shape [dim, dim]."""
 
-    return _sample_semi_orthonormal_complement(torch.zeros([dim, 0]))
+    return _sample_semi_orthonormal_complement(torch.zeros([dim, 0], dtype=dtype))
 
 
 def _sample_semi_orthonormal_complement(Q: Tensor) -> Tensor:
@@ -115,8 +155,9 @@ def _sample_semi_orthonormal_complement(Q: Tensor) -> Tensor:
     :param Q: A semi-orthonormal matrix (i.e. Q^T Q = I) of shape [m, k], with k <= m.
     """
 
+    dtype = Q.dtype
     m, k = Q.shape
-    A = torch.randn([m, m - k])
+    A = torch.randn([m, m - k], dtype=dtype)
 
     # project A onto the orthogonal complement of Q
     A_proj = A - Q @ (Q.T @ A)

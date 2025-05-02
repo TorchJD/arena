@@ -1,5 +1,6 @@
 import torch
 
+from arena.matrix_samplers import NormalMatrixSampler
 from arena.objectives import (
     AggregationTime,
     DualProjectionDualFeasibilityObjective,
@@ -9,8 +10,8 @@ from arena.objectives import (
 
 OBJECTIVE_LISTS = {
     "runtime": [
-        AggregationTime(m=m, n=m, device=device, dtype=dtype, iterations=10)
-        for dtype in [torch.float32]
+        AggregationTime(matrix_sampler=NormalMatrixSampler(m, m, m, dtype), device=device, iterations=1)
+        for dtype in [torch.float32, torch.float64]
         for device in ["cpu", "cuda"]
         for m in [2, 4, 32, 128]
     ],

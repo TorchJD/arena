@@ -6,7 +6,7 @@ import torch
 from torch import Tensor
 from torchjd.aggregation import Aggregator
 
-from arena.inputs import generate_gramian
+from arena.matrix_samplers import generate_gramian, MatrixSampler
 
 
 class Objective(ABC):
@@ -28,15 +28,13 @@ class AggregatorObjective(Objective, ABC):
 
 
 class AggregationTime(AggregatorObjective):
-    def __init__(self, m: int, n: int, device: str, dtype: torch.dtype, iterations: int):
-        self.m = m
-        self.n = n
+    def __init__(self, matrix_sampler: MatrixSampler, device: str, iterations: int):
+        self.matrix_sampler = matrix_sampler
         self.device = device
-        self.dtype = dtype
         self.iterations = iterations
 
     def __call__(self, A: Aggregator) -> float:
-        J = torch.randn(self.m, self.n, device=self.device, dtype=self.dtype)
+        J = self.matrix_sampler().to(device=self.device)
         A(J)
 
         # Synchronize before timing if using CUDA
@@ -55,9 +53,12 @@ class AggregationTime(AggregatorObjective):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}(m={self.m}, n={self.n}, device={self.device}, dtype="
-            f"{self.dtype}, iterations={self.iterations})"
+            f"{self.__class__.__name__}(matrix_sampler={self.matrix_sampler}, device={self.device},"
+            f" iterations={self.iterations})"
         )
+
+    def __str__(self) -> str:
+        return f"AT({self.matrix_sampler}, {self.device}, x{self.iterations})"
 
 
 class DualProjectionPrimalFeasibilityObjective(Objective):
