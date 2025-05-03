@@ -13,7 +13,3 @@ echo "Done, result saved in results/"
 echo "Done. Computing objective values UPGrad(max_iter=100, eps=0)..."
 uv run python -m scripts.compute qp_solver "UPGrad(max_iter=100, eps=0)" agg runtime
 echo "Done, result saved in results/"
-
-echo "Done. Computing objective values UPGrad(max_iter=1000, eps=0)..."
-uv run python -m scripts.compute qp_solver "UPGrad(max_iter=1000, eps=0)" agg runtime
-echo "Done, result saved in results/"
