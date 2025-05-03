@@ -19,7 +19,7 @@ class CurryingInterface(Interface):
         Interface able to import and curry a function based on its representation.
 
         Example:
-            >>> CurryingInterface()('torchjd.aggregation._dual_cone_utils.project_weights(solver="quadprog")')
+            >>> CurryingInterface()('torchjd.aggregation._dual_cone_utils.project_weights{"solver":"quadprog"}')
             # Output: partial(torchjd.aggregation._dual_cone_utils.project_weights, solver="quadprog")
         """
 
