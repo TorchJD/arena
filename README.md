@@ -10,6 +10,11 @@ uv python install 3.12.10
 uv python pin 3.12.10
 ```
 
+Make scripts executable:
+```bash
+chmod +x $(ls *.sh)
+```
+
 ## Usage
 
 Run the following command:
