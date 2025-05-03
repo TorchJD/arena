@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import torch
 from torch import Tensor
@@ -6,7 +6,7 @@ from torch.nn.functional import normalize
 
 
 def generate_gramian(m: int, device: str, dtype: torch.dtype) -> Tensor:
-    matrix = _sample_strictly_weak_matrix(m, m, m-2, dtype=dtype).to(device=device)
+    matrix = _sample_strictly_weak_matrix(m, m, m - 2, dtype=dtype).to(device=device)
     # matrix = torch.randn([m, m], device=device, dtype=dtype)
     return matrix @ matrix.T
 

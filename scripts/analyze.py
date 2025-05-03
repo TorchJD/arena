@@ -3,11 +3,10 @@ import pandas as pd
 
 from arena.paths import PATH_RESULTS
 
-
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
-pd.set_option('display.max_colwidth', 500)
+pd.set_option("display.max_rows", 500)
+pd.set_option("display.max_columns", 500)
+pd.set_option("display.width", 1000)
+pd.set_option("display.max_colwidth", 500)
 
 
 @click.command()
@@ -26,5 +25,5 @@ def main(objectives_key: str, floatfmt: str):
     print(df.to_markdown(tablefmt="github", floatfmt=floatfmt))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

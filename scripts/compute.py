@@ -39,5 +39,5 @@ def main(ref: str, representation: str, interface_key: str, objectives_key: str)
     df.to_csv(save_dir / f"{column_name}.csv", index=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

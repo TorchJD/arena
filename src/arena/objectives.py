@@ -6,7 +6,7 @@ import torch
 from torch import Tensor
 from torchjd.aggregation import Aggregator
 
-from arena.matrix_samplers import generate_gramian, MatrixSampler
+from arena.matrix_samplers import MatrixSampler
 
 
 class Objective(ABC):
@@ -49,10 +49,7 @@ class AggregationTime(AggregatorObjective):
         return average_runtime
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}(matrix_sampler={self.matrix_sampler}, device={self.device},"
-            f" iterations={self.iterations})"
-        )
+        return f"{self.__class__.__name__}(matrix_sampler={self.matrix_sampler}, device={self.device}," f" iterations={self.iterations})"
 
     def __str__(self) -> str:
         return f"AT({self.matrix_sampler}, {self.device}, x{self.iterations})"
@@ -103,7 +100,9 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
         return f"KKTS({self.matrix_sampler}, {self.device}, x{self.iterations})"
 
 
-def compute_kkt_conditions(matrix_sampler: MatrixSampler, device: str, iterations: int, project_weights: Callable[[Tensor, Tensor], Tensor]) -> tuple[float, float, float]:
+def compute_kkt_conditions(
+    matrix_sampler: MatrixSampler, device: str, iterations: int, project_weights: Callable[[Tensor, Tensor], Tensor]
+) -> tuple[float, float, float]:
     J = matrix_sampler().to(device=device)
     G = J @ J.T
     u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)

@@ -1,10 +1,10 @@
+import importlib
 from abc import ABC, abstractmethod
+from functools import partial
 from typing import Callable
 
-from torchjd.aggregation import Aggregator
-import importlib
-from functools import partial
 import torch  # noqa
+from torchjd.aggregation import Aggregator
 
 
 class Interface(ABC):
@@ -23,9 +23,9 @@ class CurryingInterface(Interface):
             # Output: partial(torchjd.aggregation._dual_cone_utils.project_weights, solver="quadprog")
         """
 
-        module_name = ".".join(representation[:representation.find("{")].split(".")[:-1])
-        function_name = representation[:representation.find("{")].split(".")[-1]
-        params_string = representation[representation.find("{"):]
+        module_name = ".".join(representation[: representation.find("{")].split(".")[:-1])
+        function_name = representation[: representation.find("{")].split(".")[-1]
+        params_string = representation[representation.find("{") :]
 
         kwargs = eval(params_string)
 
@@ -45,7 +45,7 @@ class AggregatorInterface(Interface):
             # Output: UPGrad(reg_eps=0.1)
         """
 
-        class_name = representation[:representation.find("(")]
+        class_name = representation[: representation.find("(")]
         _import_from_module("torchjd.aggregation", class_name)
 
         return eval(representation)
