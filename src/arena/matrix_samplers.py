@@ -29,22 +29,22 @@ class MatrixSampler(ABC):
         return f"{self.__class__.__name__.replace("MatrixSampler", "")}({self.m}x{self.n}r{self.rank}:{str(self.dtype)[6:]})"
 
 
-class NormalMatrixSampler(MatrixSampler):
+class NormalSampler(MatrixSampler):
     def __call__(self) -> Tensor:
         return _sample_matrix(self.m, self.n, self.rank, self.dtype)
 
 
-class StrongMatrixSampler(MatrixSampler):
+class StrongSampler(MatrixSampler):
     def __call__(self) -> Tensor:
         return _sample_strong_matrix(self.m, self.n, self.rank, self.dtype)
 
 
-class StrictlyWeakMatrixSampler(MatrixSampler):
+class StrictlyWeakSampler(MatrixSampler):
     def __call__(self) -> Tensor:
         return _sample_strictly_weak_matrix(self.m, self.n, self.rank, self.dtype)
 
 
-class NonWeakMatrixSampler(MatrixSampler):
+class NonWeakSampler(MatrixSampler):
     def __call__(self) -> Tensor:
         return _sample_non_weak_matrix(self.m, self.n, self.rank, self.dtype)
 
