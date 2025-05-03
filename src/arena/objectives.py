@@ -23,9 +23,6 @@ class AggregatorObjective(Objective, ABC):
     def __call__(self, A: Aggregator) -> float:
         """Returns the value of the objective obtained for the provided aggregator."""
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}()"
-
 
 class AggregationTime(AggregatorObjective):
     def __init__(self, matrix_sampler: MatrixSampler, device: str, iterations: int):
