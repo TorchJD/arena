@@ -23,3 +23,10 @@ Run the following command:
 ```
 
 You can create similar bash files to make other tests.
+
+## Contributing
+
+Before making commits, but after installing the environment, run:
+```bash
+uv run pre-commit install
+```

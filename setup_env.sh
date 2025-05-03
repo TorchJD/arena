@@ -35,4 +35,4 @@ REF="$1"
 rm -rf .venv
 uv venv --quiet
 uv pip install --quiet "git+ssh://git@github.com/TorchJD/torchjd.git@$REF"
-uv pip install --quiet -e .
+uv pip install --quiet -e . --group check

@@ -11,3 +11,8 @@ dependencies = [
     "tabulate",  # required for df.to_markdown()
     "tqdm",
 ]
+
+[dependency-groups]
+check = [
+    "pre-commit>=2.9.2"  # isort doesn't work before 2.9.2
+]
