@@ -69,31 +69,11 @@ class DualProjectionPrimalFeasibilityObjective(Objective):
 
     def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
         """Returns the primal feasibility gap."""
+        _, _, slackness = compute_kkt_conditions(self.matrix_sampler, self.device, self.iterations, project_weights)
+        return slackness
 
-        J = self.matrix_sampler().to(device=self.device)
-        G = J @ J.T
-        u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
-        _ = project_weights(u, G)
-
-        zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
-
-        cumulative_primal_gap_differences = 0.0
-        for _ in range(self.iterations):
-            J = self.matrix_sampler().to(device=self.device)
-            G = J @ J.T
-            u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
-            w = project_weights(u, G)
-            primal_gap = G @ w
-            primal_gap_positive_part = primal_gap[primal_gap >= 0]
-            primal_gap_norm = primal_gap.norm()
-            if primal_gap_norm <= 1e-08:
-                difference = zero
-            else:
-                difference = torch.abs(primal_gap_positive_part.norm() - primal_gap_norm) / primal_gap_norm
-            cumulative_primal_gap_differences += difference.item()
-
-        average_primal_gap = cumulative_primal_gap_differences / self.iterations
-        return average_primal_gap
+    def __str__(self) -> str:
+        return f"KKTP({self.matrix_sampler}, {self.device}, x{self.iterations})"
 
 
 class DualProjectionDualFeasibilityObjective(Objective):
@@ -104,30 +84,11 @@ class DualProjectionDualFeasibilityObjective(Objective):
 
     def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
         """Returns the primal feasibility gap."""
-        J = self.matrix_sampler().to(device=self.device)
-        G = J @ J.T
-        u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
-        _ = project_weights(u, G)
+        _, dual_gap, _ = compute_kkt_conditions(self.matrix_sampler, self.device, self.iterations, project_weights)
+        return dual_gap
 
-        zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
-
-        cumulative_dual_gap_differences = 0.0
-        for _ in range(self.iterations):
-            J = self.matrix_sampler().to(device=self.device)
-            G = J @ J.T
-            u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
-            w = project_weights(u, G)
-            dual_gap = w - u
-            dual_gap_positive_part = dual_gap[dual_gap >= 0.0]
-            dual_gap_norm = dual_gap.norm()
-            if dual_gap_norm <= 1e-08:
-                difference = zero
-            else:
-                difference = torch.abs(dual_gap_positive_part.norm() - dual_gap_norm) / dual_gap_norm
-            cumulative_dual_gap_differences += difference.item()
-
-        average_primal_gap = cumulative_dual_gap_differences / self.iterations
-        return average_primal_gap
+    def __str__(self) -> str:
+        return f"KKTD({self.matrix_sampler}, {self.device}, x{self.iterations})"
 
 
 class DualProjectionSlacknessFeasibilityObjective(Objective):
@@ -138,27 +99,59 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
 
     def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
         """Returns the primal feasibility gap."""
-        J = self.matrix_sampler().to(device=self.device)
+        primal_gap, _, _ = compute_kkt_conditions(self.matrix_sampler, self.device, self.iterations, project_weights)
+        return primal_gap
+
+    def __str__(self) -> str:
+        return f"KKTS({self.matrix_sampler}, {self.device}, x{self.iterations})"
+
+
+def compute_kkt_conditions(matrix_sampler: MatrixSampler, device: str, iterations: int, project_weights: Callable[[Tensor, Tensor], Tensor]) -> tuple[float, float, float]:
+    J = matrix_sampler().to(device=device)
+    G = J @ J.T
+    u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
+    _ = project_weights(u, G)
+
+    zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
+
+    cumulative_primal_gap_differences = 0.0
+    cumulative_dual_gap_differences = 0.0
+    cumulative_slackness = 0.0
+    for _ in range(iterations):
+        J = matrix_sampler().to(device=device)
         G = J @ J.T
         u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
-        _ = project_weights(u, G)
+        w = project_weights(u, G)
+        dual_gap = w - u
+        primal_gap = G @ w
 
-        zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
+        # Primal gap
+        primal_gap_positive_part = primal_gap[primal_gap >= 0]
+        primal_gap_norm = primal_gap.norm()
+        if primal_gap_norm <= 1e-08:
+            difference = zero
+        else:
+            difference = torch.abs(primal_gap_positive_part.norm() - primal_gap_norm) / primal_gap_norm
+        cumulative_primal_gap_differences += difference.item()
 
-        cumulative_slackness = 0.0
-        for _ in range(self.iterations):
-            J = self.matrix_sampler().to(device=self.device)
-            G = J @ J.T
-            u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
-            w = project_weights(u, G)
-            dual_gap = w - u
-            primal_gap = G @ w
-            norm_product = dual_gap.norm() * primal_gap.norm()
-            if norm_product <= 1e-08:
-                slackness = zero
-            else:
-                slackness = dual_gap @ primal_gap / norm_product
-            cumulative_slackness += slackness.abs().item()
+        # Dual gap
+        dual_gap_positive_part = dual_gap[dual_gap >= 0.0]
+        dual_gap_norm = dual_gap.norm()
+        if dual_gap_norm <= 1e-08:
+            difference = zero
+        else:
+            difference = torch.abs(dual_gap_positive_part.norm() - dual_gap_norm) / dual_gap_norm
+        cumulative_dual_gap_differences += difference.item()
 
-        average_primal_gap = cumulative_slackness / self.iterations
-        return average_primal_gap
+        # Slackness
+        norm_product = dual_gap.norm() * primal_gap.norm()
+        if norm_product <= 1e-08:
+            slackness = zero
+        else:
+            slackness = dual_gap @ primal_gap / norm_product
+        cumulative_slackness += slackness.abs().item()
+
+    average_primal_gap = cumulative_primal_gap_differences / iterations
+    average_dual_gap = cumulative_dual_gap_differences / iterations
+    average_slackness = cumulative_slackness / iterations
+    return average_primal_gap, average_dual_gap, average_slackness
