@@ -149,7 +149,6 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
                 slackness = 0.0
             else:
                 slackness = dual_gap @ primal_gap / norm_product
-            slackness = dual_gap @ primal_gap
             cumulative_slackness += slackness.abs().item()
 
         average_primal_gap = cumulative_slackness / self.iterations
