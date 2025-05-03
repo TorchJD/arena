@@ -18,8 +18,8 @@ OBJECTIVE_LISTS = {
         for cls in [NormalSampler, StrongSampler, StrictlyWeakSampler, NonWeakSampler]
     ],
     "project_weights": [
-        DualProjectionPrimalFeasibilityObjective(m=10, device="cuda", dtype=torch.float32, iterations=10),
-        DualProjectionDualFeasibilityObjective(m=10, device="cuda", dtype=torch.float32, iterations=10),
-        DualProjectionSlacknessFeasibilityObjective(m=10, device="cuda", dtype=torch.float32, iterations=10),
+        DualProjectionPrimalFeasibilityObjective(m=10, device="cpu", dtype=torch.float32, iterations=10),
+        DualProjectionDualFeasibilityObjective(m=10, device="cpu", dtype=torch.float32, iterations=10),
+        DualProjectionSlacknessFeasibilityObjective(m=10, device="cpu", dtype=torch.float32, iterations=10),
     ],
 }
