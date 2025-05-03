@@ -62,23 +62,24 @@ class AggregationTime(AggregatorObjective):
 
 
 class DualProjectionPrimalFeasibilityObjective(Objective):
-    def __init__(self, m: int, device: str, dtype: torch.dtype, iterations: int):
-        self.m = m
+    def __init__(self, matrix_sampler: MatrixSampler, device: str, iterations: int):
+        self.matrix_sampler = matrix_sampler
         self.device = device
-        self.dtype = dtype
         self.iterations = iterations
 
     def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
         """Returns the primal feasibility gap."""
 
-        u = torch.rand(self.m, device=self.device, dtype=self.dtype)
-        G = generate_gramian(self.m, self.device, self.dtype)
+        J = self.matrix_sampler().to(device=self.device)
+        G = J @ J.T
+        u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
         _ = project_weights(u, G)
 
         cumulative_primal_gap_differences = 0.0
         for _ in range(self.iterations):
-            u = torch.rand(self.m, device=self.device, dtype=self.dtype)
-            G = generate_gramian(self.m, self.device, self.dtype)
+            J = self.matrix_sampler().to(device=self.device)
+            G = J @ J.T
+            u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
             w = project_weights(u, G)
             primal_gap = G @ w
             primal_gap_positive_part = primal_gap[primal_gap >= 0]
@@ -94,22 +95,23 @@ class DualProjectionPrimalFeasibilityObjective(Objective):
 
 
 class DualProjectionDualFeasibilityObjective(Objective):
-    def __init__(self, m: int, device: str, dtype: torch.dtype, iterations: int):
-        self.m = m
+    def __init__(self, matrix_sampler: MatrixSampler, device: str, iterations: int):
+        self.matrix_sampler = matrix_sampler
         self.device = device
-        self.dtype = dtype
         self.iterations = iterations
 
     def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
         """Returns the primal feasibility gap."""
-        u = torch.rand(self.m, device=self.device, dtype=self.dtype)
-        G = generate_gramian(self.m, self.device, self.dtype)
+        J = self.matrix_sampler().to(device=self.device)
+        G = J @ J.T
+        u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
         _ = project_weights(u, G)
 
         cumulative_dual_gap_differences = 0.0
         for _ in range(self.iterations):
-            u = torch.rand(self.m, device=self.device, dtype=self.dtype)
-            G = generate_gramian(self.m, self.device, self.dtype)
+            J = self.matrix_sampler().to(device=self.device)
+            G = J @ J.T
+            u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
             w = project_weights(u, G)
             dual_gap = w - u
             dual_gap_positive_part = dual_gap[dual_gap >= 0.0]
@@ -125,22 +127,23 @@ class DualProjectionDualFeasibilityObjective(Objective):
 
 
 class DualProjectionSlacknessFeasibilityObjective(Objective):
-    def __init__(self, m: int, device: str, dtype: torch.dtype, iterations: int):
-        self.m = m
+    def __init__(self, matrix_sampler: MatrixSampler, device: str, iterations: int):
+        self.matrix_sampler = matrix_sampler
         self.device = device
-        self.dtype = dtype
         self.iterations = iterations
 
     def __call__(self, project_weights: Callable[[Tensor, Tensor], Tensor]) -> float:
         """Returns the primal feasibility gap."""
-        u = torch.rand(self.m, device=self.device, dtype=self.dtype)
-        G = generate_gramian(self.m, self.device, self.dtype)
+        J = self.matrix_sampler().to(device=self.device)
+        G = J @ J.T
+        u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
         _ = project_weights(u, G)
 
         cumulative_slackness = 0.0
         for _ in range(self.iterations):
-            u = torch.rand(self.m, device=self.device, dtype=self.dtype)
-            G = generate_gramian(self.m, self.device, self.dtype)
+            J = self.matrix_sampler().to(device=self.device)
+            G = J @ J.T
+            u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
             w = project_weights(u, G)
             dual_gap = w - u
             primal_gap = G @ w
