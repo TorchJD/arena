@@ -75,6 +75,8 @@ class DualProjectionPrimalFeasibilityObjective(Objective):
         u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
         _ = project_weights(u, G)
 
+        zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
+
         cumulative_primal_gap_differences = 0.0
         for _ in range(self.iterations):
             J = self.matrix_sampler().to(device=self.device)
@@ -85,7 +87,7 @@ class DualProjectionPrimalFeasibilityObjective(Objective):
             primal_gap_positive_part = primal_gap[primal_gap >= 0]
             primal_gap_norm = primal_gap.norm()
             if primal_gap_norm <= 1e-08:
-                difference = 0.0
+                difference = zero
             else:
                 difference = torch.abs(primal_gap_positive_part.norm() - primal_gap_norm) / primal_gap_norm
             cumulative_primal_gap_differences += difference.item()
@@ -107,6 +109,8 @@ class DualProjectionDualFeasibilityObjective(Objective):
         u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
         _ = project_weights(u, G)
 
+        zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
+
         cumulative_dual_gap_differences = 0.0
         for _ in range(self.iterations):
             J = self.matrix_sampler().to(device=self.device)
@@ -117,7 +121,7 @@ class DualProjectionDualFeasibilityObjective(Objective):
             dual_gap_positive_part = dual_gap[dual_gap >= 0.0]
             dual_gap_norm = dual_gap.norm()
             if dual_gap_norm <= 1e-08:
-                difference = 0.0
+                difference = zero
             else:
                 difference = torch.abs(dual_gap_positive_part.norm() - dual_gap_norm) / dual_gap_norm
             cumulative_dual_gap_differences += difference.item()
@@ -139,6 +143,8 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
         u = torch.rand(G.shape[0], device=G.device, dtype=G.dtype)
         _ = project_weights(u, G)
 
+        zero = torch.tensor([0.0], device=G.device, dtype=G.dtype)
+
         cumulative_slackness = 0.0
         for _ in range(self.iterations):
             J = self.matrix_sampler().to(device=self.device)
@@ -149,7 +155,7 @@ class DualProjectionSlacknessFeasibilityObjective(Objective):
             primal_gap = G @ w
             norm_product = dual_gap.norm() * primal_gap.norm()
             if norm_product <= 1e-08:
-                slackness = 0.0
+                slackness = zero
             else:
                 slackness = dual_gap @ primal_gap / norm_product
             cumulative_slackness += slackness.abs().item()
