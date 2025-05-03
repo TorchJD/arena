@@ -12,7 +12,8 @@ pd.set_option('display.max_colwidth', 500)
 
 @click.command()
 @click.argument("objectives_key")
-def main(objectives_key: str):
+@click.argument("floatfmt", default=".2g")
+def main(objectives_key: str, floatfmt: str):
     load_dir = PATH_RESULTS / objectives_key
 
     dfs = []
@@ -22,7 +23,7 @@ def main(objectives_key: str):
         dfs.append(df)
 
     df = pd.concat(dfs, axis=1)
-    print(df.to_markdown())
+    print(df.to_markdown(tablefmt="github", floatfmt=floatfmt))
 
 
 if __name__ == '__main__':
