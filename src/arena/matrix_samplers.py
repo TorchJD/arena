@@ -105,7 +105,7 @@ def _sample_strictly_weak_matrix(m: int, n: int, rank: int, dtype: torch.dtype) 
 
     u = torch.abs(torch.randn([m], dtype=dtype))
     split_index = torch.randint(1, m, []).item()
-    shuffled_range = torch.randperm(m, dtype=dtype)
+    shuffled_range = torch.randperm(m)
     v = torch.zeros(m, dtype=dtype)
     v[shuffled_range[:split_index]] = normalize(u[shuffled_range[:split_index]], dim=0)
     v_prime = torch.zeros(m, dtype=dtype)
