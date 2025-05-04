@@ -1,0 +1,11 @@
+objective_key: runtime
+refs:
+  main:
+    interface_key: agg
+    representations:
+      - UPGrad()
+  qp_solver:
+    interface_key: agg
+    representations:
+      - UPGrad()
+      - UPGrad(max_iter=100, eps=0)

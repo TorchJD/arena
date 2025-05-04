@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from arena.interfaces import INTERFACES
 from arena.objectives import OBJECTIVE_LISTS
-from arena.paths import PATH_RESULTS
+from arena.paths import PATH_RESULTS, make_results_filename
 
 
 @click.command()
@@ -36,7 +36,7 @@ def main(ref: str, representation: str, interface_key: str, objectives_key: str)
 
     save_dir = PATH_RESULTS / objectives_key
     save_dir.mkdir(parents=True, exist_ok=True)
-    df.to_csv(save_dir / f"{column_name}.csv", index=False)
+    df.to_csv(save_dir / make_results_filename(ref, representation), index=False)
 
 
 if __name__ == "__main__":

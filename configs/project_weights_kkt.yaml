@@ -1,0 +1,10 @@
+objective_key: project_weights
+refs:
+  main:
+    interface_key: curry
+    representations:
+      - "torchjd.aggregation._dual_cone_utils.project_weights{'solver':'quadprog'}"
+  qp_solver:
+    interface_key: curry
+    representations:
+      - "torchjd.aggregation._dual_cone_utils.project_weights{'max_iter':100, 'eps':1e-06, 'lr':1.9}"
