@@ -30,6 +30,11 @@ To make other tests, you can modify `objectives.py`, and you may need to make a 
 load your Python function and wrap it to make it have the same interface as what your objective expects) in
 `interfaces.py`. You can then make a new `.yaml` configuration in `configs`.
 
+To obtain an actual table from the computed results, use:
+```bash
+uv run python -m scripts.analyze <results_folder_name>
+```
+
 ## Contributing
 
 Before making commits, but after installing the environment, run:
