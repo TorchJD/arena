@@ -1,11 +1,11 @@
 echo Installing environment with torchjd at ref main...
-./setup_env.sh main
+./setup_env.sh main -q
 echo Done. Computing objective values...
 uv run python -m scripts.compute main "torchjd.aggregation._dual_cone_utils.project_weights{'solver':'quadprog'}" curry project_weights
 echo Done, result saved in results/
 
 echo Installing environment with torchjd at ref qp_solver...
-./setup_env.sh qp_solver
+./setup_env.sh qp_solver -q
 echo Done. Computing objective values...
 uv run python -m scripts.compute qp_solver "torchjd.aggregation._dual_cone_utils.project_weights{'max_iter':100, 'eps':1e-06, 'lr':1.9}" curry project_weights
 echo Done, result saved in results/
