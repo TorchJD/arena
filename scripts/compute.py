@@ -15,7 +15,8 @@ from arena.paths import PATH_RESULTS, make_results_filename
 @click.argument("representation")
 @click.argument("interface_key")
 @click.argument("objectives_key")
-def main(ref: str, representation: str, interface_key: str, objectives_key: str):
+@click.argument("config_name")
+def main(ref: str, representation: str, interface_key: str, objectives_key: str, config_name: str):
     # Fix randomness
     torch.manual_seed(0)
     torch.backends.cudnn.benchmark = False
@@ -34,7 +35,7 @@ def main(ref: str, representation: str, interface_key: str, objectives_key: str)
 
     df = pd.DataFrame(list(results.items()), columns=["Objective", column_name])
 
-    save_dir = PATH_RESULTS / objectives_key
+    save_dir = PATH_RESULTS / config_name
     save_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(save_dir / make_results_filename(ref, representation), index=False)
 

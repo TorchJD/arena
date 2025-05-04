@@ -8,9 +8,9 @@ from arena.paths import PATH_CONFIGS, make_results_filename
 
 
 @click.command()
-@click.argument("config_filename")
-def main(config_filename: str):
-    config = _load_yaml(PATH_CONFIGS / config_filename)
+@click.argument("cfg")
+def main(cfg: str):
+    config = _load_yaml(PATH_CONFIGS / f"{cfg}.yaml")
     objective_key = config["objective_key"]
 
     for ref in config["refs"]:
@@ -23,12 +23,14 @@ def main(config_filename: str):
         for representation in representations:
             print(f"Computing objective values for {_bf(_purple(representation))}...")
             try:
-                subprocess.check_call(["uv", "run", "-q", "python", "-m", "scripts.compute", ref, representation, interface_key, objective_key])
+                subprocess.check_call(["uv", "run", "-q", "python", "-m", "scripts.compute", ref, representation, interface_key, objective_key, cfg])
                 print(f"Results saved at results/{objective_key}/{make_results_filename(ref, representation)}")
             except Exception as e:
                 print(e)
             print()
         print()
+
+    subprocess.check_call(["uv", "run", "-q", "python", "-m", "scripts.analyze", cfg])
 
 
 def _load_yaml(file_path: Path) -> dict:

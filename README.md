@@ -19,11 +19,12 @@ chmod +x $(ls *.sh)
 
 Run the following command:
 ```bash
-uv run python -m main <name>
+uv run python -m main <config-name>
 ```
-With `<name>` replaced by the name of your desired configuration file, located in `configs`. For instance:
+With `<config-name>` replaced by the name of your desired configuration file (without the .yaml extension), located in
+`configs`. For instance:
 ```bash
-uv run python -m main upgrad_runtime.yaml
+uv run python -m main upgrad_runtime
 ```
 
 To make other tests, you can modify `objectives.py`, and you may need to make a new interface (the object responsible to
@@ -32,7 +33,7 @@ load your Python function and wrap it to make it have the same interface as what
 
 To obtain an actual table from the computed results, use:
 ```bash
-uv run python -m scripts.analyze <results_folder_name>
+uv run python -m scripts.analyze <config-name>
 ```
 
 ## Contributing
