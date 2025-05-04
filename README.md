@@ -19,10 +19,16 @@ chmod +x $(ls *.sh)
 
 Run the following command:
 ```bash
-./compare_upgrad_speed.sh
+uv run python -m main <name>
+```
+With `<name>` replaced by the name of your desired configuration file, located in `configs`. For instance:
+```bash
+uv run python -m main upgrad_runtime.yaml
 ```
 
-You can create similar bash files to make other tests.
+To make other tests, you can modify `objectives.py`, and you may need to make a new interface (the object responsible to
+load your Python function and wrap it to make it have the same interface as what your objective expects) in
+`interfaces.py`. You can then make a new `.yaml` configuration in `configs`.
 
 ## Contributing
 
