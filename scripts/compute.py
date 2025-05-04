@@ -5,8 +5,8 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 
-from arena.configurations import OBJECTIVE_LISTS
 from arena.interfaces import INTERFACES
+from arena.objectives import OBJECTIVE_LISTS
 from arena.paths import PATH_RESULTS
 
 
