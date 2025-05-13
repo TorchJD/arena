@@ -5,12 +5,6 @@ from torch import Tensor
 from torch.nn.functional import normalize
 
 
-def generate_gramian(m: int, device: str, dtype: torch.dtype) -> Tensor:
-    matrix = _sample_strictly_weak_matrix(m, m, m - 2, dtype=dtype).to(device=device)
-    # matrix = torch.randn([m, m], device=device, dtype=dtype)
-    return matrix @ matrix.T
-
-
 class MatrixSampler(ABC):
     def __init__(self, m: int, n: int, rank: int, dtype: torch.dtype):
         self.m = m
