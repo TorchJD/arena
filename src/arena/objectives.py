@@ -1,6 +1,6 @@
 import time
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Never
 
 import torch
 from torch import Tensor
@@ -11,7 +11,7 @@ from arena.matrix_samplers import MatrixSampler, NonWeakSampler, NormalSampler, 
 
 class Objective(ABC):
     @abstractmethod
-    def __call__(self, func: Callable) -> float:
+    def __call__(self, func: Callable[..., Never]) -> float:
         """Returns the value of the objective obtained for the provided function."""
 
     def __repr__(self) -> str:
