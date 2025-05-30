@@ -4,7 +4,6 @@ from typing import Callable, Never
 
 import torch
 from torch import Tensor
-from torchjd.aggregation import Aggregator
 
 from arena.matrix_samplers import MatrixSampler, NonWeakSampler, NormalSampler, StrictlyWeakSampler, StrongSampler
 
@@ -20,7 +19,7 @@ class Objective(ABC):
 
 class AggregatorObjective(Objective, ABC):
     @abstractmethod
-    def __call__(self, A: Aggregator) -> float:
+    def __call__(self, A: Callable[[Tensor], Tensor]) -> float:
         """Returns the value of the objective obtained for the provided aggregator."""
 
 
@@ -30,7 +29,7 @@ class AggregationTime(AggregatorObjective):
         self.device = device
         self.iterations = iterations
 
-    def __call__(self, A: Aggregator) -> float:
+    def __call__(self, A: Callable[[Tensor], Tensor]) -> float:
         J = self.matrix_sampler().to(device=self.device)
         A(J)
 
