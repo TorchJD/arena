@@ -51,6 +51,20 @@ class AggregatorInterface(Interface):
         return eval(representation)
 
 
+class FnInterface(Interface):
+    def __call__(self, representation: str) -> Aggregator:
+        """
+        Interface able to import a function based on its representation.
+
+        Example:
+            >>> FnInterface()('mtl_backward')
+            # Output: <function mtl_backward at 0x77745b8e6de0>
+        """
+
+        _import_from_module("torchjd", representation)
+        return eval(representation)
+
+
 def _import_from_module(module_name: str, object_name: str):
     module = importlib.import_module(module_name)
     cls = getattr(module, object_name)
@@ -60,4 +74,5 @@ def _import_from_module(module_name: str, object_name: str):
 INTERFACES = {
     "agg": AggregatorInterface(),
     "curry": CurryingInterface(),
+    "fn": FnInterface(),
 }
