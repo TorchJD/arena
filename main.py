@@ -12,6 +12,7 @@ from arena.paths import PATH_CONFIGS, make_results_filename
 def main(cfg: str):
     config = _load_yaml(PATH_CONFIGS / f"{cfg}.yaml")
     objective_key = config["objective_key"]
+    floatfmt = config.get("floatfmt", ".2g")
 
     for ref in config["refs"]:
         print(f"Installing environment with torchjd at ref {_bf(_green(ref))}... ", end="")
@@ -30,7 +31,7 @@ def main(cfg: str):
             print()
         print()
 
-    subprocess.check_call(["uv", "run", "-q", "python", "-m", "scripts.analyze", cfg])
+    subprocess.check_call(["uv", "run", "-q", "python", "-m", "scripts.analyze", cfg, floatfmt])
 
 
 def _load_yaml(file_path: Path) -> dict:
