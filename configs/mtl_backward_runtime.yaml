@@ -1,10 +1,10 @@
 objective_key: mtl_backward_runtime
 refs:
-  main:
+  v0.6.0:
     interface_key: fn
     representations:
       - mtl_backward
-  remove-tensor-dict-checks-at-runtime:
+  main:
     interface_key: fn
     representations:
       - mtl_backward
