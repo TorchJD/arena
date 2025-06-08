@@ -186,6 +186,41 @@ class MTLBackwardTime(Objective):
         return f"MTLBT({self.device}, x{self.iterations})"
 
 
+class GramianTime(Objective):
+    def __init__(self, m: int, n: int, device: str, iterations: int):
+        self.matrix = torch.randn([m, n], device=device)
+
+        def f(x: Tensor) -> Tensor:
+            return self.matrix @ x
+
+        self.f = f
+        self.m = m
+        self.n = n
+        self.iterations = iterations
+        self.device = device
+
+    def __call__(self, compute_gramian) -> float:
+        total_time = 0.0
+        for i in range(self.iterations + 1):
+
+            x = torch.randn(self.n, device=self.device, requires_grad=True)
+            if self.device.startswith("cuda"):
+                torch.cuda.synchronize()
+            start = time.perf_counter()
+
+            compute_gramian(self.f, x)
+
+            if self.device.startswith("cuda"):
+                torch.cuda.synchronize()
+            end = time.perf_counter()
+
+            # We don't count the first iteration which is there just in case, to get cuda fully initialized
+            if i > 0:
+                total_time += end - start
+        average_runtime = total_time / self.iterations
+        return average_runtime
+
+
 def compute_kkt_conditions(
     matrix_sampler: MatrixSampler, device: str, iterations: int, project_weights: Callable[[Tensor, Tensor], Tensor]
 ) -> tuple[float, float, float]:
@@ -247,6 +282,7 @@ OBJECTIVE_LISTS = {
         for m in [2, 4, 32, 128]
     ],
     "mtl_backward_runtime": [MTLBackwardTime(n_tasks=50, device=device, iterations=100) for device in ["cpu", "cuda"]],
+    "gramian_runtime": [GramianTime(100, 1000000, "cuda", 1)],
     "project_weights": [
         DualProjectionPrimalFeasibilityObjective(matrix_sampler=cls(m, m, m - 1, torch.float32), device=device, iterations=10)
         for cls in [NormalSampler, StrongSampler, StrictlyWeakSampler, NonWeakSampler]

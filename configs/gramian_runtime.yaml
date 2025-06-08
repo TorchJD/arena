@@ -1,0 +1,10 @@
+objective_key: gramian_runtime
+refs:
+  main:
+    interface_key: compute_gramian_with_autojac
+    representations:
+      - ""
+  vgp-v2:
+    interface_key: fn
+    representations:
+      - get_output_and_gramian

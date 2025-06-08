@@ -68,6 +68,36 @@ class FnInterface(Interface):
         return eval(representation)
 
 
+class ComputeGramianWithAutojacInterface(Interface):
+    def __call__(self, representation: str) -> Callable:
+        """
+        Interface able to make a function to compute the gramian from autojac transforms.
+
+        Example:
+            >>> ComputeGramianWithAutojacInterface()('mtl_backward')
+            # Output: <function mtl_backward at 0x77745b8e6de0>
+        """
+
+        def get_model_gramian_via_autojac(f: Callable, x: Tensor) -> Tensor:
+            from torchjd._autojac._transform import Diagonalize, Init, Jac, OrderedSet
+            from torchjd._autojac._transform._aggregate import _Matrixify
+
+            output = f(x)
+            params = OrderedSet([x])
+            outputs = OrderedSet([output])
+            init = Init(outputs)
+            diag = Diagonalize(outputs)
+            jac = Jac(outputs, params, chunk_size=None)
+            mat = _Matrixify()
+
+            jacobian_matrices = (mat << jac << diag << init)({})
+            gramian = torch.sum(torch.stack([J @ J.T for J in jacobian_matrices.values()]), dim=0)
+
+            return gramian
+
+        return get_model_gramian_via_autojac
+
+
 class ForwardBackwardAutojacInterface(Interface):
     def __call__(self, _: str):
         from torchjd.aggregation._aggregator_bases import GramianWeightedAggregator
@@ -102,4 +132,5 @@ INTERFACES = {
     "agg": AggregatorInterface(),
     "curry": CurryingInterface(),
     "fn": FnInterface(),
+    "compute_gramian_with_autojac": ComputeGramianWithAutojacInterface(),
 }
