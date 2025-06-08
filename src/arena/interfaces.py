@@ -4,6 +4,9 @@ from functools import partial
 from typing import Callable
 
 import torch  # noqa
+import torchjd
+from torch import Tensor
+from torch.nn import Module
 from torchjd.aggregation import Aggregator
 
 
@@ -63,6 +66,30 @@ class FnInterface(Interface):
 
         _import_from_module("torchjd", representation)
         return eval(representation)
+
+
+class ForwardBackwardAutojacInterface(Interface):
+    def __call__(self, _: str):
+        from torchjd.aggregation._aggregator_bases import GramianWeightedAggregator
+        def forward_backward(model: Module, input: Tensor, aggregator: GramianWeightedAggregator) -> None:
+            output = model(input)
+            torchjd.backward(output, aggregator)
+
+        return forward_backward
+
+
+class ForwardBackwardAutogramInterface(Interface):
+    def __call__(self, _: str):
+        from torchjd.aggregation._aggregator_bases import GramianWeightedAggregator
+        from torchjd.autogram._vgp import vgp_from_module, get_gramian
+        def forward_backward(model: Module, input: Tensor, aggregator: GramianWeightedAggregator) -> None:
+            output, vgp_fn = vgp_from_module(model, input)
+            gramian = get_gramian(vgp_fn, output.shape[0])
+            weights = aggregator.weighting.weighting(gramian)
+            output.backward(weights)
+
+
+        return forward_backward
 
 
 def _import_from_module(module_name: str, object_name: str):
