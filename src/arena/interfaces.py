@@ -111,11 +111,11 @@ class ForwardBackwardAutojacInterface(Interface):
 
 class ForwardBackwardAutogramInterface(Interface):
     def __call__(self, _: str):
-        from torchjd._autogram._vgp import get_gramian, vgp_from_module_1
+        from torchjd._autogram._vgp import get_gramian, vgp_from_module_2
         from torchjd.aggregation._aggregator_bases import GramianWeightedAggregator
 
         def forward_backward(model: Module, input: Tensor, aggregator: GramianWeightedAggregator) -> None:
-            output, vgp_fn = vgp_from_module_1(model, input)
+            output, vgp_fn = vgp_from_module_2(model, input)
             gramian = get_gramian(vgp_fn, output)
             weights = aggregator.weighting.weighting(gramian)
             output.backward(weights)
