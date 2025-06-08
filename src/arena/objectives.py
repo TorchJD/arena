@@ -63,7 +63,7 @@ class ForwardBackwardTime(Objective):
         self.device = device
         shapes = zip(ns[:-1], ns[1:])
         layers = [Linear(n, m) for n, m in shapes]
-        self.model = Sequential(*layers)
+        self.model = Sequential(*layers).to(device=device)
         self.iterations = iterations
 
     def __call__(self, forward_backward: Callable):
