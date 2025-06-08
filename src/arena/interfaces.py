@@ -101,6 +101,7 @@ class ComputeGramianWithAutojacInterface(Interface):
 class ForwardBackwardAutojacInterface(Interface):
     def __call__(self, _: str):
         from torchjd.aggregation._aggregator_bases import GramianWeightedAggregator
+
         def forward_backward(model: Module, input: Tensor, aggregator: GramianWeightedAggregator) -> None:
             output = model(input)
             torchjd.backward(output, aggregator)
@@ -110,14 +111,14 @@ class ForwardBackwardAutojacInterface(Interface):
 
 class ForwardBackwardAutogramInterface(Interface):
     def __call__(self, _: str):
+        from torchjd._autogram._vgp import get_gramian, vgp_from_module_1
         from torchjd.aggregation._aggregator_bases import GramianWeightedAggregator
-        from torchjd.autogram._vgp import vgp_from_module, get_gramian
+
         def forward_backward(model: Module, input: Tensor, aggregator: GramianWeightedAggregator) -> None:
-            output, vgp_fn = vgp_from_module(model, input)
-            gramian = get_gramian(vgp_fn, output.shape[0])
+            output, vgp_fn = vgp_from_module_1(model, input)
+            gramian = get_gramian(vgp_fn, output)
             weights = aggregator.weighting.weighting(gramian)
             output.backward(weights)
-
 
         return forward_backward
 
@@ -133,4 +134,6 @@ INTERFACES = {
     "curry": CurryingInterface(),
     "fn": FnInterface(),
     "compute_gramian_with_autojac": ComputeGramianWithAutojacInterface(),
+    "forward_backward_autogram": ForwardBackwardAutogramInterface(),
+    "forward_backward_autojac": ForwardBackwardAutojacInterface(),
 }
