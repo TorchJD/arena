@@ -117,7 +117,7 @@ class ForwardBackwardAutogramInterface(Interface):
         def forward_backward(model: Module, input: Tensor, aggregator: GramianWeightedAggregator) -> None:
             output, vgp_fn = vgp_from_module_2(model, input)
             gramian = get_gramian(vgp_fn, output)
-            weights = aggregator.weighting.weighting(gramian)
+            weights = aggregator.weighting(gramian)
             output.backward(weights)
 
         return forward_backward

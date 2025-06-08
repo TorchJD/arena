@@ -4,10 +4,11 @@ from typing import Callable, Never
 
 import torch
 from torch import Tensor
-from torch.nn import Linear, MSELoss, ReLU, Sequential, Module
+from torch.nn import Linear, MSELoss, ReLU, Sequential
 from torch.optim import SGD
-from torchjd.aggregation import Mean, Aggregator, UPGrad
+from torchjd.aggregation import Mean
 
+from arena.architectures import Cifar10Model
 from arena.matrix_samplers import MatrixSampler, NonWeakSampler, NormalSampler, StrictlyWeakSampler, StrongSampler
 
 
@@ -58,19 +59,18 @@ class AggregationTime(AggregatorObjective):
 
 
 class ForwardBackwardTime(Objective):
-    def __init__(self, ns: list[int], device: str, iterations: int):
-        self.ns = ns
+    def __init__(self, device: str, iterations: int):
+        torch.cuda.empty_cache()
         self.device = device
-        shapes = zip(ns[:-1], ns[1:])
-        layers = [Linear(n, m) for n, m in shapes]
-        self.model = Sequential(*layers).to(device=device)
+        self.model = Cifar10Model().to(device=device)
         self.iterations = iterations
+        self.input_shape = (16, 3, 32, 32)
 
     def __call__(self, forward_backward: Callable):
-        aggregator = UPGrad()
+        aggregator = Mean()
         total_time = 0.0
         for i in range(self.iterations + 1):
-            x = torch.randn(self.ns[0], device=self.device)
+            x = torch.randn(self.input_shape, device=self.device)
 
             if self.device.startswith("cuda"):
                 torch.cuda.synchronize()
@@ -85,12 +85,6 @@ class ForwardBackwardTime(Objective):
                 total_time += end - start
         average_runtime = total_time / self.iterations
         return average_runtime
-
-        def __repr__(self) -> str:
-            return f"{self.__class__.__name__}(ns={self.ns}, device={self.device}," f" iterations={self.iterations})"
-
-        def __str__(self) -> str:
-            return f"AT({self.matrix_sampler}, {self.device}, x{self.iterations})"
 
 
 class DualProjectionPrimalFeasibilityObjective(Objective):
@@ -283,6 +277,7 @@ OBJECTIVE_LISTS = {
     ],
     "mtl_backward_runtime": [MTLBackwardTime(n_tasks=50, device=device, iterations=100) for device in ["cpu", "cuda"]],
     "gramian_runtime": [GramianTime(100, 1000000, "cuda", 1)],
+    "forward_backward_runtime": [ForwardBackwardTime("cuda", 1)],
     "project_weights": [
         DualProjectionPrimalFeasibilityObjective(matrix_sampler=cls(m, m, m - 1, torch.float32), device=device, iterations=10)
         for cls in [NormalSampler, StrongSampler, StrictlyWeakSampler, NonWeakSampler]
